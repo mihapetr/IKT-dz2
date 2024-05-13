@@ -1,10 +1,10 @@
-spring.application.name: coffee-ordering
+spring.application.name: MLib
 
 spring:
   jpa:
     show-sql: true # Show SQL queries in the console, useful for debugging, but not recommended for production
     hibernate:
-      # Set this to none if you have your own schema.sql initialization file
+      # Set this to none if you have your own schema.sql initialization file,
       # and you want to use it instead of Hibernate's schema generation.
       #
       # The initialization file may look like this:
@@ -17,7 +17,7 @@ spring:
       ddl-auto: update
 
   datasource:
-    url: jdbc:mariadb://localhost:3306/coffee_ordering
+    url: jdbc:mariadb://localhost:3306/MLidb
     username: root # never use root user like in this example, configure your own user in init script with limited permissions
     password: pass # never hardcode passwords, use env variables
     driver-class-name: org.mariadb.jdbc.Driver

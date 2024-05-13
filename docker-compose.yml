@@ -3,7 +3,7 @@ services:
     image: mariadb
     restart: always
     environment:
-      MARIADB_ROOT_PASSWORD: ${MARIADB_COFFEE_ROOT_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
     volumes:
       - ./mariadb:/docker-entrypoint-initdb.d
     ports:
@@ -12,11 +12,16 @@ services:
       interval: 30s
       retries: 3
       test:
-        [
-          "CMD",
-          "healthcheck.sh",
-          "--su-mysql",
-          "--connect",
-          "--innodb_initialized"
-        ]
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MARIADB_ROOT_PASSWORD}"]
       timeout: 30s
+
+  libService:
+    build: ./MLib   # build from the project directory Dockerfile
+    image: dz2-libservice
+    ports:    # both services are in the same network by default; no additional port connections needed
+      - "8080:8080"
+    environment:
+      TESTVAR: TESTVAL
+    depends_on:
+      - db  # start only after db is running
+    command: bash -c "sleep 3 && exec /start_command.sh"  # wait a little for any small db initialization
