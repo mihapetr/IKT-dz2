@@ -1,7 +1,9 @@
 package com.infobip.pmf.course.storage;
 
+import com.infobip.pmf.course.sLibrary;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -17,12 +19,27 @@ public class sLibraryEntity {
     @Column(nullable = false, name = "lib_artifact_id")
     private String artifactId;
 
-    @Column()
-    private List<Long> versions;
+    // library -- 1:N -- version
+    @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<lVersionEntity> versions;
 
     @Column(nullable = false, name = "lib_name")
     private String name;
 
     @Column
     private String description;
+
+    sLibrary assLibrary() {
+        return new sLibrary(id, groupId, artifactId,
+                versionsIdList(),
+                name, description);
+    }
+
+    List<Long> versionsIdList() {
+        List<Long> ids = new ArrayList<Long>();
+        versions.forEach(
+                (version) -> ids.add(version.getId())
+        );
+        return ids;
+    }
 }

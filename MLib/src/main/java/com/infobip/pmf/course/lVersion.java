@@ -1,4 +1,11 @@
 package com.infobip.pmf.course;
 
-public class lVersion {
+import jakarta.validation.constraints.NotNull;
+
+public record lVersion(
+        @NotNull Long id,
+        @NotNull String semanticVersion,
+        String description,
+        @NotNull Boolean deprecated
+) {
 }

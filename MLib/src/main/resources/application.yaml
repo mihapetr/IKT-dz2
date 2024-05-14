@@ -17,7 +17,8 @@ spring:
       ddl-auto: update
 
   datasource:
-    url: jdbc:mariadb://localhost:3306/MLidb
+    #url: jdbc:mariadb://localhost:3306/MLidb   # they are in the same docker network
+    url: jdbc:mariadb://db:3306/MLidb
     username: root # never use root user like in this example, configure your own user in init script with limited permissions
     password: pass # never hardcode passwords, use env variables
     driver-class-name: org.mariadb.jdbc.Driver

@@ -6,22 +6,30 @@ services:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
     volumes:
       - ./mariadb:/docker-entrypoint-initdb.d
+      - ./MLib/data:/var/lib/mysql:Z  # setup volume for persistence when db is not running
     ports:
-      - "3306:3306"
+      - "3306:3306" # can be omited if we don't want visibility ouside docker env
     healthcheck:
       interval: 30s
       retries: 3
       test:
-        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MARIADB_ROOT_PASSWORD}"]
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--su-mysql",
+          "--connect",
+          "--innodb_initialized"
+        ]
       timeout: 30s
 
   libService:
     build: ./MLib   # build from the project directory Dockerfile
     image: dz2-libservice
-    ports:    # both services are in the same network by default; no additional port connections needed
+    ports:
       - "8080:8080"
     environment:
       TESTVAR: TESTVAL
     depends_on:
-      - db  # start only after db is running
+      db:
+        condition: service_healthy # start only after db is running and healthy
     command: bash -c "sleep 3 && exec /start_command.sh"  # wait a little for any small db initialization
