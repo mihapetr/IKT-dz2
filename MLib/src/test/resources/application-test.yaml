@@ -8,7 +8,7 @@ spring:
       ddl-auto: update # create-drop is useful for testing, because we want to have a clean initialization every time
 
   datasource:
-    url: jdbc:h2:mem:MLidb;INIT=CREATE SCHEMA IF NOT EXISTS MLidb
+    url: jdbc:h2:mem:MLidb;INIT=CREATE SCHEMA IF NOT EXISTS m_lidb
     username: sa
     password:
     driver-class-name: org.h2.Driver

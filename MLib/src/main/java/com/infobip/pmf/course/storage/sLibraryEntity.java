@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name="Library", schema="MLidb")
+@Table(name="s_library", schema="m_lidb")
 public class sLibraryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +29,7 @@ public class sLibraryEntity {
     @Column
     private String description;
 
-    sLibrary assLibrary() {
+    public sLibrary assLibrary() {
         return new sLibrary(id, groupId, artifactId,
                 versionsIdList(),
                 name, description);

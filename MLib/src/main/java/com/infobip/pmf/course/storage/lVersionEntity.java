@@ -4,6 +4,7 @@ import com.infobip.pmf.course.lVersion;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "version", schema = "m_lidb")
 public class lVersionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
