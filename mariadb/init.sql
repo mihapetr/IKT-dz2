@@ -1,12 +1,6 @@
-CREATE SCHEMA IF NOT EXISTS Mlidb;
-
---CREATE TABLE IF NOT EXISTS Mlidb.LUser (
---    id INT,
---    username VARCHAR(255),
---    passHash VARCHAR(255)
---);
+CREATE SCHEMA IF NOT EXISTS m_lidb;
 
 -- ignore is to avoid errors on insertions with duplicates
-INSERT IGNORE INTO Mlidb.LUser VALUES (1, 'Otac', 'la9psd71atbpgeg7fvvx');
-INSERT IGNORE INTO Mlidb.LUser VALUES (2, 'Sin', 'ox9w79g2jwctzww2hcyb');
-INSERT IGNORE INTO Mlidb.LUser VALUES (3, 'Duh', 'othyqhps18srg7fdj0p9');
+INSERT IGNORE INTO m_lidb.l_user (username, pass_hash) VALUES ('Otac', 'la9psd71atbpgeg7fvvx');
+INSERT IGNORE INTO m_lidb.l_user (username, pass_hash) VALUES ('Sin', 'ox9w79g2jwctzww2hcyb');
+INSERT IGNORE INTO m_lidb.l_user (username, pass_hash) VALUES ('Duh', 'othyqhps18srg7fdj0p9');

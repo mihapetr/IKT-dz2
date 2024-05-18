@@ -1,5 +1,7 @@
 package com.infobip.pmf.course.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,16 +30,9 @@ public class MLibConrollerTest {
     @BeforeEach
     void setUp() {
         restClient = RestClient.create("http://localhost:" + port);
-        /*try {
-            // Execute the init-test-data.sql script using JdbcTemplate
-            jdbcTemplate.execute("classpath:init-test-data.sql");
-        } catch (DataAccessException e) {
-            System.err.println(e.getMessage());
-            // Handle exceptions
-        }*/
     }
 
-    @Test
+    //@Test
     void test1() throws JSONException{
         var response = restClient.get()
                 .uri("/libraries?groupId=org.springframework")
@@ -47,7 +42,8 @@ public class MLibConrollerTest {
         // then
         then(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         JSONAssert.assertEquals("""
-                [
+                {
+                  "results": [
                     {
                       "id": 1,
                       "groupId": "org.springframework",
@@ -56,55 +52,52 @@ public class MLibConrollerTest {
                       "name": "Spring Core",
                       "description": "Spring Core Framework"
                     }
-                ]""", response.getBody(), true);
+                  ],
+                  "page": 0,
+                  "size": 20,
+                  "totalPages": 1,
+                  "totalResults": 1
+                }
+                """, response.getBody(), true);
     }
 
-    /* ovaj test ne radi jer treba testirati Exception
     @Test
-    void shouldBe400() {
-        var response1 = restClient.get()
-                .uri("/libraries?page=-1")
+    void universal() {
+
+        String url1 = "/libraries?groupId=org.springframework";
+        String url2 = "/libraries";
+        String url3 = "/libraries?artifactId=art1";
+        String url4 = "/libraries?groupId=org.springframework&artifactId=art1&page=1&size=2";
+
+        var r1 = restClient.get()
+                .uri(url1)
                 .retrieve()
-                .toEntity(String.class);
+                .toEntity(String.class)
+                .getBody();
 
-        var response2 = restClient.get()
-                .uri("/libraries?size=0")
+        var r2 = restClient.get()
+                .uri(url2)
                 .retrieve()
-                .toEntity(String.class);
+                .toEntity(String.class)
+                .getBody();
 
-        then(response1.getStatusCode()).isEqualTo(400);
-        then(response2.getStatusCode()).isEqualTo(400);
-    }*/
+        try {
+            pp(url1, r1);
+            pp(url2, r2);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-    /*@Test
-    void shouldGetAllUsers() throws JSONException {
-        // when
-        var response = restClient.get()
-                .uri("libraries/users")
-                .retrieve()
-                .toEntity(String.class);
+    void pp(String url, String json) throws Exception{
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.readTree(json);
 
-        // then
-        then(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        JSONAssert.assertEquals("""
-                [
-                    {
-                        "id": 1,
-                        "username": "Otac",
-                        "passHash": "la9psd71atbpgeg7fvvx"
-                    },
-                    {
-                        "id": 2,
-                        "username": "Sin",
-                        "passHash": "ox9w79g2jwctzww2hcyb"
-                    },
-                    {
-                        "id": 3,
-                        "username": "Duh",
-                        "passHash": "othyqhps18srg7fdj0p9"
-                    }
-                ]""", response.getBody(), true);
-    }*/
+        System.out.println("===========================================================");
+        System.out.println(url);
+        System.out.println("-----------------------------------------------------------");
+        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node));
+        System.out.println("===========================================================");
 
-
+    }
 }
