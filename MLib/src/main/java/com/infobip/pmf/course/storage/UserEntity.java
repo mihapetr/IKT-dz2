@@ -13,10 +13,14 @@ public class UserEntity {
     @Column(name = "username")
     private String username;
 
-    @Column(name = "pass_hash")
-    private String passHash;
+    @Column(name = "app_key")
+    private String appKey;
 
     public Account asAccount() {
-        return new Account(id, username, passHash);
+        return new Account(id, username, appKey);
+    }
+
+    public String getAppKey() {
+        return appKey;
     }
 }

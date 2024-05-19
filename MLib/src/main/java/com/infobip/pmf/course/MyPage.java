@@ -2,8 +2,8 @@ package com.infobip.pmf.course;
 
 import java.util.List;
 
-public record MyPage (
-        List<sLibrary> results,
+public record MyPage<T> (
+        List<T> results,
         int page,
         int size,
         int totalPages,

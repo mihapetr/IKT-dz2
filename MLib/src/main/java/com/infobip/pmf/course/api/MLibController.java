@@ -1,9 +1,9 @@
 package com.infobip.pmf.course.api;
 
 import com.infobip.pmf.course.*;
+import com.infobip.pmf.course.exception.UnauthorizedException;
 import com.infobip.pmf.course.storage.UserEntity;
 import jakarta.validation.constraints.Min;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,9 @@ public class MLibController {
     }
 
     @GetMapping
-    MyPage allItems(
+    @ResponseStatus(HttpStatus.OK)
+    MyPage<sLibrary> allItems(
+            @RequestHeader(value = "Authorization", required = true) String auth,
             @RequestParam(name = "groupId", required = false) String groupId,
             @RequestParam(name = "artifactId", required = false) String artifactId,
             @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
@@ -32,63 +34,85 @@ public class MLibController {
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public sLibrary registerLibrary(
+            @RequestHeader(value = "Authorization", required = true) String auth,
             @RequestBody sLibrary library
     ) {
+        if (!authorized(auth)) throw new UnauthorizedException();
         return wh.registerLib(library);
     }
 
     @GetMapping("/{id}")
     public sLibrary libById(
+            @RequestHeader(value = "Authorization", required = true) String auth,
             @PathVariable Long id
     ){
+        if (!authorized(auth)) throw new UnauthorizedException();
         return wh.libById(id);
     }
 
     @PatchMapping("/{id}")
     public sLibrary updateLibById(
+            @RequestHeader(value = "Authorization", required = true) String auth,
             @PathVariable Long id, @RequestBody sLibrary lib
     ) {
+        if (!authorized(auth)) throw new UnauthorizedException();
         return wh.updateLibById(id, lib);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteLib(
-        @PathVariable Long id
+            @RequestHeader(value = "Authorization", required = true) String auth,
+            @PathVariable Long id
     ){
+        if (!authorized(auth)) throw new UnauthorizedException();
         wh.deleteLibById(id);
     }
 
     @GetMapping("/{id}/versions")
     public MyPage getLibVersions(
-            @PathVariable Long id
+            @RequestHeader(value = "Authorization", required = true) String auth,
+            @PathVariable Long id,
+            @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+            @RequestParam(name = "size", defaultValue = "20") @Min(1) int size
     ) {
-        return wh.getLibVersions(id);
+        if (!authorized(auth)) throw new UnauthorizedException();
+        return wh.getLibVersions(id, page, size);
     }
 
     @GetMapping("/{lib_id}/versions/{v_id}")
     public lVersion getLibVersion(
+            @RequestHeader(value = "Authorization", required = true) String auth,
             @PathVariable("lib_id") Long libraryId,
             @PathVariable("v_id") Long versionId
     ) {
+        if (!authorized(auth)) throw new UnauthorizedException();
         return wh.getLibVersion(libraryId, versionId);
     }
 
     @PostMapping("{id}/versions")
     @ResponseStatus(HttpStatus.CREATED)
     public lVersion registerVersion(
+            @RequestHeader(value = "Authorization", required = true) String auth,
             @PathVariable Long id,
             @RequestBody lVersion version
     ) {
+        if (!authorized(auth)) throw new UnauthorizedException();
         return wh.registerVersion(id, version);
     }
 
     @PatchMapping("/{lib_id}/versions/{v_id}")
     public lVersion updateVErsionById(
+            @RequestHeader(value = "Authorization", required = true) String auth,
             @PathVariable("lib_id") Long libraryId,
             @PathVariable("v_id") Long versionId,
-            @RequestBody sLibrary lib
+            @RequestBody lVersion version
     ) {
-        return wh.updateVersionById(libraryId, versionId);
+        if (!authorized(auth)) throw new UnauthorizedException();
+        return wh.updateVersionById(libraryId, versionId, version);
+    }
+
+    private boolean authorized(String auth) {
+        return wh.authorized(auth);
     }
 }

@@ -1,7 +1,9 @@
 package com.infobip.pmf.course.storage;
 
+import ch.qos.logback.classic.model.LoggerModel;
 import com.infobip.pmf.course.sLibrary;
 import jakarta.persistence.*;
+import org.apache.catalina.Group;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,34 @@ public class sLibraryEntity {
 
     @Column
     private String description;
+
+    public static sLibraryEntity from(sLibrary lib) {
+        sLibraryEntity e = new sLibraryEntity();
+        return e.setGroupId(lib.groupId()).
+                setArtifactId(lib.groupId()).
+                setName(lib.name()).
+                setDescription(lib.description());
+    }
+
+    private sLibraryEntity setDescription(String v) {
+        this.description = v;
+        return this;
+    }
+
+    private sLibraryEntity setName(String v) {
+        this.name = v;
+        return this;
+    }
+
+    private sLibraryEntity setArtifactId(String v) {
+        this.artifactId = v;
+        return this;
+    }
+
+    private sLibraryEntity setGroupId(String v) {
+        this.groupId = v;
+        return this;
+    }
 
     public sLibrary assLibrary() {
         return new sLibrary(id, groupId, artifactId,

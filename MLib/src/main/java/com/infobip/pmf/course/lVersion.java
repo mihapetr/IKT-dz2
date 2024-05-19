@@ -2,10 +2,14 @@ package com.infobip.pmf.course;
 
 import jakarta.validation.constraints.NotNull;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 public record lVersion(
-        @NotNull Long id,
-        @NotNull String semanticVersion,
+        Long id,
+        String semanticVersion,
         String description,
+        ZonedDateTime releaseDate,
         @NotNull Boolean deprecated
 ) {
 }

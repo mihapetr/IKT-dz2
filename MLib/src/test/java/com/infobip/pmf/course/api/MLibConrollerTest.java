@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -62,42 +63,202 @@ public class MLibConrollerTest {
     }
 
     @Test
-    void universal() {
+    void allLibs() throws Exception {
+        request(
+                "get",
+                "/libraries",
+                null
+        );
+    }
 
-        String url1 = "/libraries?groupId=org.springframework";
-        String url2 = "/libraries";
-        String url3 = "/libraries?artifactId=art1";
-        String url4 = "/libraries?groupId=org.springframework&artifactId=art1&page=1&size=2";
+    @Test
+    void allLibsFilter() throws Exception {
+        request(
+                "get",
+                "libraries?groupId=org.springframework",
+                null
+        );
+    }
 
-        var r1 = restClient.get()
-                .uri(url1)
-                .retrieve()
-                .toEntity(String.class)
-                .getBody();
+    // popravi tako da indeks strancie bude stvaran, a ne traženi
+    // samo dva filtera dopuštena uz page i size? -> popravi?
+    @Test
+    void allLibsFilterBad() throws Exception {
+        request(
+                "get",
+                "libraries?group=a&page=1",
+                null
+        );
+    }
 
-        var r2 = restClient.get()
-                .uri(url2)
-                .retrieve()
-                .toEntity(String.class)
-                .getBody();
+    @Test
+    void allLibsFilterBadPage() throws Exception {
+        request(
+                "get",
+                "libraries?page=-1",
+                null
+        );
+    }
 
-        try {
-            pp(url1, r1);
-            pp(url2, r2);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    // more filter and page tests todo here
+
+    @Test
+    void libById() throws Exception {
+        request(
+                "get",
+                "/libraries/1",
+                null
+        );
+    }
+
+    @Test
+    void updateLib() throws Exception {
+        request(
+                "patch",
+                "/libraries/1",
+                """
+                    {
+                        "groupId": "nova.grupa",
+                        "artifactId": "a-thing",
+                        "name": "the-thing",
+                        "description": "hehe ;)"
+                    }"""
+        );
+    }
+
+    @Test
+    void deleteLib() throws Exception {
+        request(
+                "delete",
+                "/libraries/1",
+                null
+        );
+        System.out.println("AFTER DELETION : ");
+        request(
+                "get",
+                "/libraries",
+                null
+        );
+    }
+
+    @Test
+    void getLibVersions() throws Exception {
+        request(
+                "get",
+                "/libraries/1/versions",
+                null
+        );
+    }
+
+    @Test
+    void getLibVersion() throws Exception {
+        request(
+                "get",
+                "/libraries/1/versions/1",
+                null
+        );
+    }
+
+    @Test
+    void registerVersion() throws Exception {
+        request("post",
+                "/libraries/1/versions",
+                """
+                        {
+                          "semanticVersion": "5.3.11",
+                          "description": "Spring Core Framework 5.3.10",
+                          "deprecated": false
+                        }
+                        """
+        );
+    }
+
+    // test exceptions
+
+    @Test
+    void updateVersion() throws Exception {
+        request("patch",
+                "/libraries/1/versions/1",
+                """
+                        {
+                          "description": "brbrbrbbrbr",
+                          "deprecated": true
+                        }
+                        """
+        );
+    }
+
+
+    void pp(String method, String url, String status, String json) throws Exception{
+        ObjectMapper mapper = new ObjectMapper();
+        if (json != null) {
+            JsonNode node = mapper.readTree(json);
+
+            System.out.println("===========================================================");
+            System.out.println(method + " | " + url + " : status = " + status);
+            System.out.println("-----------------------------------------------------------");
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node));
+            System.out.println("===========================================================");
+        }
+        else {
+            System.out.println("===========================================================");
+            System.out.println(method + " | " + url + " | status = " + status);
+            System.out.println("-----------------------------------------------------------");
+            System.out.println("Nothing Here");
+            System.out.println("===========================================================");
         }
     }
 
-    void pp(String url, String json) throws Exception{
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode node = mapper.readTree(json);
+    void request(String method, String url, String body) throws Exception{
 
-        System.out.println("===========================================================");
-        System.out.println(url);
-        System.out.println("-----------------------------------------------------------");
-        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node));
-        System.out.println("===========================================================");
+        switch (method) {
+            case "get":
 
+                var r1 = restClient.get()
+                        .uri(url)
+                        .header("Authorization", "App la9psd71atbpgeg7fvvx")
+                        .retrieve()
+                        .toEntity(String.class);
+                pp(method, url, r1.getStatusCode().toString(), r1.getBody());
+
+                break;
+
+            case "delete":
+
+                var r2 = restClient.delete()
+                        .uri(url)
+                        .header("Authorization", "App la9psd71atbpgeg7fvvx")
+                        .retrieve()
+                        .toEntity(String.class);
+                pp(method, url, r2.getStatusCode().toString(), r2.getBody());
+
+                break;
+
+            case "post":
+
+                var r3 = restClient.post()
+                        .uri(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "App la9psd71atbpgeg7fvvx")
+                        .body(body)
+                        .retrieve()
+                        .toEntity(String.class);
+                pp(method, url, r3.getStatusCode().toString(), r3.getBody());
+
+                break;
+
+            case "patch":
+
+                var r4 = restClient.patch()
+                        .uri(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "App la9psd71atbpgeg7fvvx")
+                        .body(body)
+                        .retrieve()
+                        .toEntity(String.class);
+                pp(method, url, r4.getStatusCode().toString(), r4.getBody());
+
+                break;
+        }
     }
 }
