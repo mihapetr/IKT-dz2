@@ -1,6 +1,7 @@
 package com.infobip.pmf.course.api;
 
 import com.infobip.pmf.course.*;
+import com.infobip.pmf.course.exception.InvalidParameters;
 import com.infobip.pmf.course.exception.UnauthorizedException;
 import com.infobip.pmf.course.storage.UserEntity;
 import jakarta.validation.constraints.Min;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RequestMapping("/libraries")
 @RestController
@@ -19,15 +21,28 @@ public class MLibController {
         wh = warehouse;
     }
 
+    private final List<String> allowedParams = List.of(
+            "groupId",
+            "artifactId",
+            "page",
+            "size"
+    );
+
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     MyPage<sLibrary> allItems(
             @RequestHeader(value = "Authorization", required = true) String auth,
+            @RequestParam Map<String, String> allParam,
             @RequestParam(name = "groupId", required = false) String groupId,
             @RequestParam(name = "artifactId", required = false) String artifactId,
             @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
             @RequestParam(name = "size", defaultValue = "20") @Min(1) int size
     ) {
+        allParam.keySet().forEach(
+                paramName -> {
+                    if (!allowedParams.contains(paramName)) throw new InvalidParameters();
+                }
+        );
         return wh.allLibItems(groupId, artifactId, page, size);
     }
 

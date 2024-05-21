@@ -1,4 +1,6 @@
-* bacanje exceptiona kod kršenja pravila sa zahtjevima
-* inicijalizacijska skripta za MariaDB po uzoru na H2
+- bacanje exceptiona kod kršenja pravila sa zahtjevima
+- releaseDate format
+- inicijalizacijska skripta za MariaDB po uzoru na H2
 * testiraj pokretanje s docker compose
-* JaCoCo ekstenzija
+- JaCoCo ekstenzija
+* openapi specifikacija

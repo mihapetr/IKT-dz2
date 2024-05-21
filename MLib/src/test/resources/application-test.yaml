@@ -2,7 +2,7 @@ spring.application.name: MLib
 
 spring:
   jpa:
-    show-sql: true
+    show-sql: false
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: update # create-drop is useful for testing, because we want to have a clean initialization every time

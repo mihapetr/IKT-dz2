@@ -36,7 +36,7 @@ public class lVersionEntity {
                 .setSemanticVersion(version.semanticVersion())
                 .setDescription(version.description())
                 .generateReleaseDate()
-                .setDeprecated(version.deprecated());
+                .setDeprecated(version.deprecated() == null ? false : version.deprecated());    // automatic false
     }
 
     public lVersionEntity setLibrary(sLibraryEntity v) {
@@ -70,5 +70,9 @@ public class lVersionEntity {
 
     public Long getId() {
         return id;
+    }
+
+    public boolean getDeprecated() {
+        return this.deprecated;
     }
 }

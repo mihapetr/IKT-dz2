@@ -9,7 +9,7 @@ public record sLibrary (
         Long id,
         @NotNull String groupId,
         @NotNull String artifactId,
-        @NotNull List<Long> versions,
+        List<Long> versions,
         @NotNull String name,
         String description
 ) {}

@@ -16,8 +16,10 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
+import static org.assertj.core.api.BDDAssertions.catchThrowableOfType;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -33,41 +35,13 @@ public class MLibConrollerTest {
         restClient = RestClient.create("http://localhost:" + port);
     }
 
-    //@Test
-    void test1() throws JSONException{
-        var response = restClient.get()
-                .uri("/libraries?groupId=org.springframework")
-                .retrieve()
-                .toEntity(String.class);
-
-        // then
-        then(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        JSONAssert.assertEquals("""
-                {
-                  "results": [
-                    {
-                      "id": 1,
-                      "groupId": "org.springframework",
-                      "artifactId": "spring-core",
-                      "versions": [1, 2],
-                      "name": "Spring Core",
-                      "description": "Spring Core Framework"
-                    }
-                  ],
-                  "page": 0,
-                  "size": 20,
-                  "totalPages": 1,
-                  "totalResults": 1
-                }
-                """, response.getBody(), true);
-    }
-
     @Test
     void allLibs() throws Exception {
         request(
                 "get",
                 "/libraries",
-                null
+                null,
+                HttpStatus.OK
         );
     }
 
@@ -75,8 +49,9 @@ public class MLibConrollerTest {
     void allLibsFilter() throws Exception {
         request(
                 "get",
-                "libraries?groupId=org.springframework",
-                null
+                "/libraries?groupId=org.springframework",
+                null,
+                HttpStatus.OK
         );
     }
 
@@ -86,28 +61,128 @@ public class MLibConrollerTest {
     void allLibsFilterBad() throws Exception {
         request(
                 "get",
-                "libraries?group=a&page=1",
-                null
+                "/libraries?group=a&page=1",
+                null,
+                HttpStatus.BAD_REQUEST
         );
     }
 
     @Test
-    void allLibsFilterBadPage() throws Exception {
+    void allLibsFilterBadPage() throws Exception{
         request(
                 "get",
-                "libraries?page=-1",
-                null
+                "/libraries?page=-1",
+                null,
+                HttpStatus.BAD_REQUEST
         );
     }
 
-    // more filter and page tests todo here
+    @Test
+    void shouldGiveEmptyList() throws Exception{
+            request(
+                    "get",
+                    "/libraries?groupId=org.springframework&artifactId=nepostojeciiii",
+                    null,
+                    HttpStatus.OK
+            );
+    }
+
+    // more filter and page tests todo here (done?)
+
+    @Test
+    void illegalLibFormatGroup() throws Exception {
+        request(
+                "post",
+                "/libraries",
+                """
+                    {
+                        "artifactId": "a-thing",
+                        "name": "the-thing",
+                        "description": "hehe ;)"
+                    }""",
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @Test
+    void illegalLibFormatName() throws Exception {
+        request(
+                "post",
+                "/libraries",
+                """
+                    {
+                        "groupId": "nova.grupa",
+                        "artifactId": "a-thing"
+                    }""",
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @Test
+    void illegalLibFormatArtifact() throws Exception {
+        request(
+                "post",
+                "/libraries",
+                """
+                    {
+                        "groupId": "nova.grupa",
+                        "artifactId": 1,
+                        "name": "the-thing",
+                        "description": "hehe ;)"
+                    }""",
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @Test
+    void libIdComboViolation() throws Exception {
+        request(
+                "post",
+                "/libraries",
+                """
+                    {
+                        "groupId": "org.moja",
+                        "artifactId": "art1",
+                        "name": "",
+                        "description": ""
+                    }""",
+                HttpStatus.CONFLICT
+        );
+    }
 
     @Test
     void libById() throws Exception {
         request(
                 "get",
                 "/libraries/1",
-                null
+                null,
+                HttpStatus.OK
+        );
+    }
+
+    @Test
+    void libById404() throws Exception {
+        request(
+                "get",
+                "/libraries/707",
+                null,
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @Test
+    void registerLib() throws Exception {
+        System.out.println("SAVING ALIENS--------------------------------------------- oo -------------");
+        request(
+                "post",
+                "/libraries",
+                """
+                    {
+                        "groupId": "aliens",
+                        "artifactId": "super-secret-****",
+                        "name": "Overlord"
+                    }""",
+                HttpStatus.CREATED
         );
     }
 
@@ -118,11 +193,51 @@ public class MLibConrollerTest {
                 "/libraries/1",
                 """
                     {
-                        "groupId": "nova.grupa",
-                        "artifactId": "a-thing",
                         "name": "the-thing",
                         "description": "hehe ;)"
-                    }"""
+                    }""",
+                HttpStatus.OK
+        );
+    }
+
+    @Test
+    void updateLib404() throws Exception {
+        request(
+                "patch",
+                "/libraries/7077",
+                """
+                    {
+                        "name": "the-thingy",
+                        "description": "hehe ;)"
+                    }""",
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @Test
+    void updateLibJustDescription() throws Exception {
+        request(
+                "patch",
+                "/libraries/1",
+                """
+                    {
+                        "description": "hehe ;)"
+                    }""",
+                HttpStatus.OK
+        );
+    }
+
+    @Test
+    void updateLibbadFormat() throws Exception {
+        request(
+                "patch",
+                "/libraries/1",
+                """
+                    {
+                        "id": 777,
+                        "description": "hehe ;)"
+                    }""",
+                HttpStatus.BAD_REQUEST
         );
     }
 
@@ -131,13 +246,32 @@ public class MLibConrollerTest {
         request(
                 "delete",
                 "/libraries/1",
-                null
+                null,
+                HttpStatus.NO_CONTENT
         );
         System.out.println("AFTER DELETION : ");
         request(
                 "get",
                 "/libraries",
-                null
+                null,
+                HttpStatus.OK
+        );
+    }
+
+    @Test
+    void deleteLibTwice() throws Exception {
+        request(
+                "delete",
+                "/libraries/1",
+                null,
+                HttpStatus.NO_CONTENT
+        );
+        System.out.println("AFTER DELETION : ");
+        request(
+                "delete",
+                "/libraries/1",
+                null,
+                HttpStatus.NOT_FOUND
         );
     }
 
@@ -146,7 +280,18 @@ public class MLibConrollerTest {
         request(
                 "get",
                 "/libraries/1/versions",
-                null
+                null,
+                HttpStatus.OK
+        );
+    }
+
+    @Test
+    void getLibVersions404() throws Exception {
+        request(
+                "get",
+                "/libraries/77/versions",
+                null,
+                HttpStatus.NOT_FOUND
         );
     }
 
@@ -155,7 +300,18 @@ public class MLibConrollerTest {
         request(
                 "get",
                 "/libraries/1/versions/1",
-                null
+                null,
+                HttpStatus.OK
+        );
+    }
+
+    @Test
+    void getLibVersion404() throws Exception {
+        request(
+                "get",
+                "/libraries/1/versions/77",
+                null,
+                HttpStatus.NOT_FOUND
         );
     }
 
@@ -169,11 +325,65 @@ public class MLibConrollerTest {
                           "description": "Spring Core Framework 5.3.10",
                           "deprecated": false
                         }
-                        """
+                        """,
+                HttpStatus.CREATED
         );
     }
 
-    // test exceptions
+    @Test
+    void registerVersionSemVerConflict() throws Exception {
+        request("post",
+                "/libraries/1/versions",
+                """
+                        {
+                          "semanticVersion": "5.3.11",
+                          "description": "Spring Core Framework 5.3.10"
+                        }
+                        """,
+                HttpStatus.CREATED
+        );
+        request("post",
+                "/libraries/1/versions",
+                """
+                        {
+                          "semanticVersion": "5.3.11",
+                          "description": "Nes drugo"
+                        }
+                        """,
+                HttpStatus.CONFLICT
+        );
+    }
+
+    @Test
+    void registerVersionsemVerViolation() throws Exception {
+        request("post",
+                "/libraries/1/versions",
+                """
+                        {
+                          "semanticVersion": "05.3.11",
+                          "description": "Spring Core Framework 5.3.10",
+                          "deprecated": false
+                        }
+                        """,
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @Test
+    void registerVersionBadFormat() throws Exception {
+        request("post",
+                "/libraries/1/versions",
+                """
+                        {
+                          "semanticVersion": "1.1.111",
+                          "description": "ekeke",
+                          "releaseDate": "nei datum"
+                          "deprecated": true
+                        }
+                        """,
+                HttpStatus.BAD_REQUEST
+        );
+    }
 
     @Test
     void updateVersion() throws Exception {
@@ -184,79 +394,124 @@ public class MLibConrollerTest {
                           "description": "brbrbrbbrbr",
                           "deprecated": true
                         }
-                        """
+                        """,
+                HttpStatus.OK
         );
     }
 
+    @Test
+    void updateDeprecatedVersion400() throws Exception {
+        request("patch",
+                "/libraries/1/versions/2",
+                """
+                        {                 
+                          "deprecated": false
+                        }
+                        """,
+                HttpStatus.BAD_REQUEST
+        );
+    }
 
-    void pp(String method, String url, String status, String json) throws Exception{
+    // unauthorized request test todo
+
+    // ----------------------------- helper functions -------------------
+
+    void pp(String method, String url, String body, String status, String json) throws Exception{
         ObjectMapper mapper = new ObjectMapper();
         if (json != null) {
             JsonNode node = mapper.readTree(json);
 
             System.out.println("===========================================================");
             System.out.println(method + " | " + url + " : status = " + status);
+            if (method == "post" || method == "patch") {
+                JsonNode node1 = mapper.readTree(body);
+                System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node1));
+            }
             System.out.println("-----------------------------------------------------------");
             System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node));
-            System.out.println("===========================================================");
+            //System.out.println("===========================================================");
         }
         else {
             System.out.println("===========================================================");
             System.out.println(method + " | " + url + " | status = " + status);
             System.out.println("-----------------------------------------------------------");
             System.out.println("Nothing Here");
-            System.out.println("===========================================================");
+            //System.out.println("===========================================================");
         }
     }
 
-    void request(String method, String url, String body) throws Exception{
+    void request(String method, String url, String body, HttpStatus errStatus) throws Exception{
 
         switch (method) {
             case "get":
 
-                var r1 = restClient.get()
-                        .uri(url)
-                        .header("Authorization", "App la9psd71atbpgeg7fvvx")
-                        .retrieve()
-                        .toEntity(String.class);
-                pp(method, url, r1.getStatusCode().toString(), r1.getBody());
+                try {
+                    var r1 = restClient.get()
+                            .uri(url)
+                            .header("Authorization", "App la9psd71atbpgeg7fvvx")
+                            .retrieve()
+                            .toEntity(String.class);
+                    then(r1.getStatusCode()).isEqualTo(errStatus);
+                    pp(method, url, body, r1.getStatusCode().toString(), r1.getBody());
+                } catch (HttpClientErrorException e) {
+                    then(e.getStatusCode()).isEqualTo(errStatus);
+                    pp(method, url, body, e.getStatusCode().toString(), e.getResponseBodyAsString());
+                }
 
                 break;
 
             case "delete":
 
-                var r2 = restClient.delete()
-                        .uri(url)
-                        .header("Authorization", "App la9psd71atbpgeg7fvvx")
-                        .retrieve()
-                        .toEntity(String.class);
-                pp(method, url, r2.getStatusCode().toString(), r2.getBody());
+                try {
+                    var r2 = restClient.delete()
+                            .uri(url)
+                            .header("Authorization", "App la9psd71atbpgeg7fvvx")
+                            .retrieve()
+                            .toEntity(String.class);
+                    then(r2.getStatusCode()).isEqualTo(errStatus);
+                    pp(method, url, body, r2.getStatusCode().toString(), r2.getBody());
+                } catch (HttpClientErrorException e) {
+                    then(e.getStatusCode()).isEqualTo(errStatus);
+                    pp(method, url, body, e.getStatusCode().toString(), e.getResponseBodyAsString());
+                }
 
                 break;
 
             case "post":
 
-                var r3 = restClient.post()
-                        .uri(url)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "App la9psd71atbpgeg7fvvx")
-                        .body(body)
-                        .retrieve()
-                        .toEntity(String.class);
-                pp(method, url, r3.getStatusCode().toString(), r3.getBody());
+                try {
+                    var r3 = restClient.post()
+                            .uri(url)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .header("Authorization", "App la9psd71atbpgeg7fvvx")
+                            .body(body)
+                            .retrieve()
+                            .toEntity(String.class);
+                    then(r3.getStatusCode()).isEqualTo(errStatus);
+                    pp(method, url, body, r3.getStatusCode().toString(), r3.getBody());
+                } catch (HttpClientErrorException e) {
+                    then(e.getStatusCode()).isEqualTo(errStatus);
+                    pp(method, url, body, e.getStatusCode().toString(), e.getResponseBodyAsString());
+                }
 
                 break;
 
             case "patch":
 
-                var r4 = restClient.patch()
-                        .uri(url)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "App la9psd71atbpgeg7fvvx")
-                        .body(body)
-                        .retrieve()
-                        .toEntity(String.class);
-                pp(method, url, r4.getStatusCode().toString(), r4.getBody());
+                try {
+                    var r4 = restClient.patch()
+                            .uri(url)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .header("Authorization", "App la9psd71atbpgeg7fvvx")
+                            .body(body)
+                            .retrieve()
+                            .toEntity(String.class);
+                    then(r4.getStatusCode()).isEqualTo(errStatus);
+                    pp(method, url, body, r4.getStatusCode().toString(), r4.getBody());
+                } catch (HttpClientErrorException e) {
+                    then(e.getStatusCode()).isEqualTo(errStatus);
+                    pp(method, url, body, e.getStatusCode().toString(), e.getResponseBodyAsString());
+                }
 
                 break;
         }

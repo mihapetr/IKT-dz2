@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -41,5 +42,13 @@ public interface lVersionEntityRepo extends ListCrudRepository<lVersionEntity, L
             @Param("versionId") Long versionId,
             @Param("description") String description,
             @Param("deprecated") Boolean deprecated
+    );
+
+    @Query("""
+            select v from lVersionEntity v
+            where v.semanticVersion = :semVer
+            """)
+    List<lVersionEntity> findBySemVer(
+            @Param("semVer") String semVer
     );
 }

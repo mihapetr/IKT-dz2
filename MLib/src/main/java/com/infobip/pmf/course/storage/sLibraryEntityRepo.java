@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface sLibraryEntityRepo extends JpaRepository<sLibraryEntity, Long> {
@@ -29,14 +30,22 @@ public interface sLibraryEntityRepo extends JpaRepository<sLibraryEntity, Long> 
     @Modifying
     @Query("""
             update sLibraryEntity
-            set groupId = :groupId, artifactId = :artifactId, name = :name, description = :description
+            set name = :name
             where id = :id
             """)
-    void updateById(
+    void updateNameById(
             @Param("id") Long id,
-            @Param("groupId") String groupId,
-            @Param("artifactId") String artifactId,
-            @Param("name") String name,
+            @Param("name") String name
+    );
+
+    @Modifying
+    @Query("""
+            update sLibraryEntity
+            set description = :description
+            where id = :id
+            """)
+    void updateDescriptionById(
+            @Param("id") Long id,
             @Param("description") String description
     );
 }

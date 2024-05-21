@@ -11,6 +11,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class Scolder {
 
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public Scolding handleUniversal() {
+        return new Scolding(
+                "Your mistake is so funny it doesn't even have a designated handler.",
+                "Check yourself!"
+        );
+    }
+
     @ExceptionHandler(LibIncorrect.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
@@ -18,6 +28,16 @@ public class Scolder {
         return new Scolding(
                 "Library format incorrect.",
                 "Please respect new library specification. Versions cannot be specified here."
+        );
+    }
+
+    @ExceptionHandler(InvalidParameters.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public Scolding handleInvalidParam() {
+        return new Scolding(
+                "Invalid parameters.",
+                "Allowed: groupId, artifactId, page, size."
         );
     }
 
@@ -47,7 +67,7 @@ public class Scolder {
     public Scolding handleBadLibPatch() {
         return new Scolding(
                 "Incorrect library update data.",
-                "Please respect library patch specification. Only description and deprecated fields can be updated."
+                "Please respect library patch specification. Only 'description' and 'deprecated' fields can be updated."
         );
     }
 
@@ -71,7 +91,7 @@ public class Scolder {
         );
     }
 
-    @ExceptionHandler(VersionSemanticCOnflict.class)
+    @ExceptionHandler(VersionSemanticConflict.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
     public Scolding handeSemanticConflict() {
