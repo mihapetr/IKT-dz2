@@ -126,7 +126,6 @@ public class MLibConrollerTest {
                 """
                     {
                         "groupId": "nova.grupa",
-                        "artifactId": 1,
                         "name": "the-thing",
                         "description": "hehe ;)"
                     }""",
@@ -172,7 +171,7 @@ public class MLibConrollerTest {
 
     @Test
     void registerLib() throws Exception {
-        System.out.println("SAVING ALIENS--------------------------------------------- oo -------------");
+        System.out.println("SAVING ALIENS--------------------------------------------- oo xxx -------------");
         request(
                 "post",
                 "/libraries",
@@ -377,7 +376,7 @@ public class MLibConrollerTest {
                         {
                           "semanticVersion": "1.1.111",
                           "description": "ekeke",
-                          "releaseDate": "nei datum"
+                          "releaseDate": "neki datum",
                           "deprecated": true
                         }
                         """,

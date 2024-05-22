@@ -28,15 +28,21 @@ public class sLibraryEntity {
     @Column(nullable = false, name = "lib_name")
     private String name;
 
-    @Column
+    @Column(name = "description")
     private String description;
 
     public static sLibraryEntity from(sLibrary lib) {
         sLibraryEntity e = new sLibraryEntity();
         return e.setGroupId(lib.groupId()).
-                setArtifactId(lib.groupId()).
+                setArtifactId(lib.artifactId()).
+                setVersions().
                 setName(lib.name()).
                 setDescription(lib.description());
+    }
+
+    public sLibraryEntity setVersions() {
+        versions = new ArrayList<>();
+        return this;
     }
 
     private sLibraryEntity setDescription(String v) {
@@ -65,11 +71,28 @@ public class sLibraryEntity {
                 name, description);
     }
 
+    // doesn't work on object returned by sLibraryEntity::save !!
     List<Long> versionsIdList() {
         List<Long> ids = new ArrayList<Long>();
+        if (versions == null || versions.isEmpty()) return ids;
         versions.forEach(
                 (version) -> ids.add(version.getId())
         );
         return ids;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    @Override
+    public String toString() {
+
+        return "id: " + id + "," +
+                "groupId: " + groupId + "," +
+                "artifactId: " + artifactId + "," +
+                "name: " + name + "," +
+                "versions: " + description + "," +
+                "versions empty: " + versions.isEmpty();
     }
 }

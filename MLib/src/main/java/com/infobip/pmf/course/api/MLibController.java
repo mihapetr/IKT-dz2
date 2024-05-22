@@ -38,6 +38,7 @@ public class MLibController {
             @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
             @RequestParam(name = "size", defaultValue = "20") @Min(1) int size
     ) {
+        if (!authorized(auth)) throw new UnauthorizedException();
         allParam.keySet().forEach(
                 paramName -> {
                     if (!allowedParams.contains(paramName)) throw new InvalidParameters();

@@ -92,8 +92,15 @@ public class Warehouse {
                 !libRepo.findAllFilter(lib.groupId(), lib.artifactId()).isEmpty()   // there is already an entry with given combo
         ) throw new ArtifactAlreadyInGroup();
 
-        System.out.println("got to saving when register lib");
-        return libRepo.save(sLibraryEntity.from(lib)).assLibrary();
+        //System.out.println("got to saving when register lib " + lib.name());
+
+        sLibraryEntity partial;
+
+        partial = libRepo.save(
+                sLibraryEntity.from(lib)
+        );
+
+        return partial.assLibrary();
     }
 
     private boolean legalLibFormat(sLibrary lib) {
@@ -254,13 +261,21 @@ public class Warehouse {
     }
 
     public boolean authorized(String auth) {
+
         String[] parts = auth.split(" ");
         if (parts.length != 2) return false;
         if(parts[0].compareTo("App") != 0) return false;
         String key = parts[1];
         List<UserEntity> users = userRepo.findAll();
-        return users.stream().anyMatch(
+
+        boolean match = users.stream().anyMatch(
                 user -> user.getAppKey().compareTo(key) == 0
         );
+
+        System.out.println(
+                "auth:" + parts[0] + "|" + parts[1] + "\nmatch:" + match
+        );
+
+        return match;
     }
 }

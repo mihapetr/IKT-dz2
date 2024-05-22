@@ -6,9 +6,10 @@ services:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD} # have "MARIADB_ROOT_PASSWORD = [your password]" in ./.env file
     volumes:
       - ./mariadb:/docker-entrypoint-initdb.d # init data script
-      - ./MLib/data:/var/lib/mysql:Z  # setup volume for persistence when db is not running
-    ports:
-      - "3306:3306" # can be omited if we don't want visibility ouside docker env
+      #- ./MLib/data:/var/lib/mysql:Z  # setup volume for persistence when db is not running
+      # UNHEALTHY WHEN USED !
+    #ports:
+     #- "3306:3306"
     healthcheck:  # healthcheck.sh provided by maraidb container
       interval: 30s
       retries: 3

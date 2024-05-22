@@ -1,6 +1,3 @@
-- bacanje exceptiona kod kršenja pravila sa zahtjevima
-- releaseDate format
-- inicijalizacijska skripta za MariaDB po uzoru na H2
-* testiraj pokretanje s docker compose
-- JaCoCo ekstenzija
-* openapi specifikacija
+
+* postaje unhealthy kad se doda volume for persistence
+*

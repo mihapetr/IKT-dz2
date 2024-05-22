@@ -16,6 +16,13 @@ public class UserEntity {
     @Column(name = "app_key")
     private String appKey;
 
+    public static UserEntity from(String name, String key) {
+        UserEntity e = new UserEntity();
+        e.username = name;
+        e.appKey = key;
+        return e;
+    }
+
     public Account asAccount() {
         return new Account(id, username, appKey);
     }
