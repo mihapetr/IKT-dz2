@@ -1,0 +1,16 @@
+spring.application.name: MLib
+
+spring:
+  jpa:
+    show-sql: true # Show SQL queries in the console, useful for debugging, but not recommended for production
+    hibernate:
+
+      ddl-auto: update
+
+  datasource:
+    #url: jdbc:mariadb://localhost:3306/m_lidb
+    url: jdbc:mariadb://db:3306/m_lidb
+    username: root # never use root user like in this example, configure your own user in init script with limited permissions
+    password: pass # never hardcode passwords, use env variables
+    driver-class-name: org.mariadb.jdbc.Driver
+

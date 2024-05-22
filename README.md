@@ -1,6 +1,6 @@
 # 2. Zadaća
 
-Ovo je inicijalni repozitorij.
+Ovo je *fork* s implementacijom zahtjeva.
 
 ## Zadatak
 

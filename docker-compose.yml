@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mariadb
+    restart: always # reboot if fails
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD} # have "MARIADB_ROOT_PASSWORD = [your password]" in ./.env file
+    volumes:
+      - ./mariadb:/docker-entrypoint-initdb.d # init data script
+      #- ./MLib/data:/var/lib/mysql:Z  # setup volume for persistence when db is not running
+      # UNHEALTHY WHEN USED !
+    #ports:
+     #- "3306:3306"
+    healthcheck:  # healthcheck.sh provided by maraidb container
+      interval: 30s
+      retries: 3
+      test:
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--su-mysql",
+          "--connect",
+          "--innodb_initialized"
+        ]
+      timeout: 30s
+
+  libService:
+    build: ./MLib   # build from the project directory Dockerfile
+    image: dz2-libservice # explicit
+    ports:
+      - "8080:8080"
+    environment:
+      TESTVAR: TESTVAL  # not imortant, just testing something
+    depends_on:
+      db:
+        condition: service_healthy # start only after db is running and healthy
